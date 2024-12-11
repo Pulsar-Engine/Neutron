@@ -6,6 +6,7 @@ pub enum Token {
     Var,
     Identifier(String),
     Number(i64),
+    Type(String),
     Assign,
     Plus,
     Minus,
@@ -76,6 +77,7 @@ impl<'a> Lexer<'a> {
                     "then" => Token::Then,
                     "end" => Token::End,
                     "ret" => Token::Ret,
+                    "int" | "float" | "string" | "bool" => Token::Type(identifier),
                     _ => Token::Identifier(identifier),
                 }
             }

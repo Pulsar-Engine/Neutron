@@ -11,7 +11,7 @@ use symbol_table::SymbolTable;
 fn main() {
     let source_code = "
         class MyClass then
-            var x
+            var x int
             func myFunc then
                 x = 42
             end
@@ -21,13 +21,13 @@ fn main() {
     let mut lexer = Lexer::new(source_code);
     let _tokens = {
         let mut _tokens = Vec::new();
-        while let token = lexer.get_next_token() {
+        loop {
+            let token = lexer.get_next_token();
             if token == lexer::Token::EOF {
                 break;
             }
             _tokens.push(token);
         }
-        _tokens
     };
 
     let mut parser = Parser::new(Lexer::new(source_code));

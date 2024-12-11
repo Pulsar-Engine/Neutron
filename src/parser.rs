@@ -1,5 +1,6 @@
 use crate::lexer::{Lexer, Token};
 use crate::ast::ASTNode;
+use crate::symbol_table::Type;
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
@@ -85,7 +86,20 @@ impl<'a> Parser<'a> {
             panic!("Expected variable name");
         };
         self.eat(Token::Identifier(name.clone()));
-        ASTNode::VariableDeclaration { name }
+
+        let var_type = if let Token::Type(type_name) = self.current_token.clone() {
+            self.eat(Token::Type(type_name.clone()));
+            match type_name.as_str() {
+                "int" => Type::Int,
+                "float" => Type::Float,
+                "string" => Type::String,
+                "bool" => Type::Bool,
+                _ => panic!("Unknown type: {}", type_name),
+            }
+        } else {
+            panic!("Expected variable type after variable name");
+        };
+        ASTNode::VariableDeclaration { name, var_type }
     }
 
     fn parse_assignment(&mut self) -> ASTNode {
