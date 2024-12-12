@@ -20,6 +20,11 @@ pub enum Token {
     Then,
     End,
     Ret,
+    Loop,
+    For,
+    While,
+    LessThan,
+    GreaterThan,
     EOF,
 }
 
@@ -77,6 +82,9 @@ impl<'a> Lexer<'a> {
                     "then" => Token::Then,
                     "end" => Token::End,
                     "ret" => Token::Ret,
+                    "for" => Token::For,
+                    "while" => Token::While,
+                    "loop" => Token::Loop,
                     "int" | "float" | "string" | "bool" => Token::Type(identifier),
                     _ => Token::Identifier(identifier),
                 }
@@ -128,6 +136,14 @@ impl<'a> Lexer<'a> {
             Some(',') => {
                 self.advance();
                 Token::Comma
+            }
+            Some('<') => {
+                self.advance();
+                Token::LessThan
+            }
+            Some('>') => {
+                self.advance();
+                Token::GreaterThan
             }
             None => Token::EOF,
             _ => panic!("Unrecognized character: {:?}", self.current_char),

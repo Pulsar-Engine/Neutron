@@ -9,4 +9,9 @@ pub enum ASTNode {
     Assignment { variable: String, expression: Box<ASTNode> },
     Number(i64),
     Identifier(String),
+    Loop { body: Vec<ASTNode> },
+    ForLoop { variable: String, start: Box<ASTNode>, end: Box<ASTNode>, body: Vec<ASTNode> },
+    WhileLoop { condition: Box<ASTNode>, body: Vec<ASTNode> },
+    Comparison { left: Box<ASTNode>, operator: String, right: Box<ASTNode> },
+    Arithmetic { left: Box<ASTNode>, operator: String, right: Box<ASTNode> },
 }
