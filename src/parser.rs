@@ -38,6 +38,8 @@ impl<'a> Parser<'a> {
             Token::Func => self.parse_function_declaration(),
             Token::Var => self.parse_variable_declaration(),
             Token::Identifier(_) => self.parse_assignment(),
+            Token::If => self.parse_if_else(),
+            Token::Ret => self.parse_ret(),
             _ => panic!("Unexpected token: {:?}", self.current_token),
         }
     }
@@ -114,20 +116,26 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expression(&mut self) -> ASTNode {
-        match self.current_token.clone() {
-            Token::Number(value) => {
-                self.consume_token(Token::Number(value));
-                ASTNode::Number(value)
-            }
-            Token::Identifier(name) => {
-                self.consume_token(Token::Identifier(name.clone()));
-                ASTNode::Identifier(name)
-            }
-            _ => panic!("Unexpected token in expression"),
+        let mut node = self.parse_term();    
+        while matches!(self.current_token, Token::Plus | Token::Minus) {
+            let op = self.current_token.clone();
+            self.advance();    
+            let right = self.parse_term();    
+            node = match op {
+                Token::Plus => ASTNode::BinaryOperation {
+                    operator: '+',
+                    left: Box::new(node),
+                    right: Box::new(right),
+                },
+                Token::Minus => ASTNode::BinaryOperation {
+                    operator: '-',
+                    left: Box::new(node),
+                    right: Box::new(right),
+                },
+                _ => unreachable!(),
+            };
         }
-    }
-    fn parse_expression(&mut self) -> ASTNode {
-        self.parse_term()
+        node
     }
 
     fn parse_term(&mut self) -> ASTNode {
