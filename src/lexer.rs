@@ -20,6 +20,8 @@ pub enum Token {
     End,
     Ret,
     EOF,
+    If,
+    Else,
 }
 
 pub struct Lexer<'a> {
