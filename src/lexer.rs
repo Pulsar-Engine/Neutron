@@ -6,6 +6,7 @@ pub enum Token {
     Var,
     Identifier(String),
     Number(i64),
+    Float(f64),
     Assign,
     Plus,
     Minus,
@@ -80,13 +81,25 @@ impl<'a> Lexer<'a> {
                 }
             }
             Some(c) if c.is_digit(10) => {
-                let mut number = 0;
+                let mut number = String::new();            
                 while let Some(d) = self.current_char.and_then(|c| c.to_digit(10)) {
-                    number = number * 10 + d as i64;
+                    number.push(std::char::from_digit(d, 10).unwrap());
                     self.advance();
+                }            
+                if self.current_char == Some('.') {
+                    number.push('.');
+                    self.advance();            
+                    while let Some(d) = self.current_char.and_then(|c| c.to_digit(10)) {
+                        number.push(std::char::from_digit(d, 10).unwrap());
+                        self.advance();
+                    }
+                    let value = number.parse::<f64>().unwrap();
+                    Token::Float(value)
+                } else {
+                    let value = number.parse::<i64>().unwrap();
+                    Token::Number(value)
                 }
-                Token::Number(number)
-            }
+            }            
             Some('=') => {
                 self.advance();
                 Token::Assign
