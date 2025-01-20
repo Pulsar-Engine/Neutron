@@ -16,7 +16,7 @@ impl<'a> Parser<'a> {
         self.current_token = self.lexer.get_next_token();
     }
 
-    fn eat(&mut self, token: Token) {
+    fn get_next_char(&mut self, token: Token) {
         if self.current_token == token {
             self.advance();
         } else {
@@ -43,55 +43,55 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_class_declaration(&mut self) -> ASTNode {
-        self.eat(Token::Class);
+        self.get_next_char(Token::Class);
         let name = if let Token::Identifier(name) = self.current_token.clone() {
             name
         } else {
             panic!("Expected class name");
         };
-        self.eat(Token::Identifier(name.clone()));
+        self.get_next_char(Token::Identifier(name.clone()));
         let mut members = Vec::new();
-        self.eat(Token::Then);
+        self.get_next_char(Token::Then);
         while self.current_token != Token::End {
             members.push(self.parse_statement());
         }
-        self.eat(Token::End);
+        self.get_next_char(Token::End);
         ASTNode::ClassDeclaration { name, members }
     }
 
     fn parse_function_declaration(&mut self) -> ASTNode {
-        self.eat(Token::Func);
+        self.get_next_char(Token::Func);
         let name = if let Token::Identifier(name) = self.current_token.clone() {
             name
         } else {
             panic!("Expected function name");
         };
-        self.eat(Token::Identifier(name.clone()));
+        self.get_next_char(Token::Identifier(name.clone()));
         let params = Vec::new();
-        self.eat(Token::Then);
+        self.get_next_char(Token::Then);
         let mut body = Vec::new();
         while self.current_token != Token::End {
             body.push(self.parse_statement());
         }
-        self.eat(Token::End);
+        self.get_next_char(Token::End);
         ASTNode::FunctionDeclaration { name, params, body }
     }
 
     fn parse_variable_declaration(&mut self) -> ASTNode {
-        self.eat(Token::Var);
+        self.get_next_char(Token::Var);
         let name = if let Token::Identifier(name) = self.current_token.clone() {
             name
         } else {
             panic!("Expected variable name");
         };
-        self.eat(Token::Identifier(name.clone()));
+        self.get_next_char(Token::Identifier(name.clone()));
         ASTNode::VariableDeclaration { name }
     }
 
     fn parse_assignment(&mut self) -> ASTNode {
         if let Token::Identifier(name) = self.current_token.clone() {
-            self.eat(Token::Identifier(name.clone()));
-            self.eat(Token::Assign);
+            self.get_next_char(Token::Identifier(name.clone()));
+            self.get_next_char(Token::Assign);
             let expression = self.parse_expression();
             ASTNode::Assignment {
                 variable: name,
@@ -105,11 +105,11 @@ impl<'a> Parser<'a> {
     fn parse_expression(&mut self) -> ASTNode {
         match self.current_token.clone() {
             Token::Number(value) => {
-                self.eat(Token::Number(value));
+                self.get_next_char(Token::Number(value));
                 ASTNode::Number(value)
             }
             Token::Identifier(name) => {
-                self.eat(Token::Identifier(name.clone()));
+                self.get_next_char(Token::Identifier(name.clone()));
                 ASTNode::Identifier(name)
             }
             _ => panic!("Unexpected token in expression"),
