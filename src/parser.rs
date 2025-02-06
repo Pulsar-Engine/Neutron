@@ -116,53 +116,54 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expression(&mut self) -> ASTNode {
-        let mut node = self.parse_term();    
-        while matches!(self.current_token, Token::Plus | Token::Minus) {
-            let op = self.current_token.clone();
-            self.advance();    
-            let right = self.parse_term();    
-            node = match op {
-                Token::Plus => ASTNode::BinaryOperation {
-                    operator: '+',
-                    left: Box::new(node),
-                    right: Box::new(right),
-                },
-                Token::Minus => ASTNode::BinaryOperation {
-                    operator: '-',
-                    left: Box::new(node),
-                    right: Box::new(right),
-                },
-                _ => unreachable!(),
-            };
-        }
-        node
-    }
-
-    fn parse_term(&mut self) -> ASTNode {
-        let mut node = self.parse_factor();
-
+        let mut node = self.parse_term();
+    
         while matches!(self.current_token, Token::Plus | Token::Minus) {
             let op = self.current_token.clone();
             self.advance();
-            let right = self.parse_factor();
-
+            let rhs = self.parse_term();
+    
             node = match op {
                 Token::Plus => ASTNode::BinaryOperation {
                     operator: '+',
                     left: Box::new(node),
-                    right: Box::new(right),
+                    right: Box::new(rhs),
                 },
                 Token::Minus => ASTNode::BinaryOperation {
                     operator: '-',
                     left: Box::new(node),
-                    right: Box::new(right),
+                    right: Box::new(rhs),
                 },
                 _ => unreachable!(),
             };
         }
-
         node
     }
+    
+    fn parse_term(&mut self) -> ASTNode {
+        let mut node = self.parse_factor();
+    
+        while matches!(self.current_token, Token::Multiply | Token::Divide) {
+            let op = self.current_token.clone();
+            self.advance();
+            let rhs = self.parse_factor();
+    
+            node = match op {
+                Token::Multiply => ASTNode::BinaryOperation {
+                    operator: '*',
+                    left: Box::new(node),
+                    right: Box::new(rhs),
+                },
+                Token::Divide => ASTNode::BinaryOperation {
+                    operator: '/',
+                    left: Box::new(node),
+                    right: Box::new(rhs),
+                },
+                _ => unreachable!(),
+            };
+        }
+        node
+    }    
 
     fn parse_factor(&mut self) -> ASTNode {
         let mut node = self.parse_primary();
