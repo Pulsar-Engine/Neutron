@@ -2,7 +2,6 @@
 mod tests {
     use neutron::lexer::{Lexer, Token};
 
-
     fn lex(input: &str) -> Vec<Token> {
         let mut lexer = Lexer::new(input);
         let mut tokens = Vec::new();
@@ -71,6 +70,49 @@ mod tests {
                 Token::Class,
                 Token::Identifier("my_var".to_string()),
                 Token::Number(123)
+            ]
+        );
+    }
+
+    #[test]
+    fn test_negative_integer() {
+        let input = "-42";
+        let tokens = lex(input);
+        assert_eq!(tokens, vec![Token::Number(-42)]);
+    }
+
+    #[test]
+    fn test_negative_float() {
+        let input = "-3.14";
+        let tokens = lex(input);
+        assert_eq!(tokens, vec![Token::Float(-3.14)]);
+    }
+
+    #[test]
+    fn test_subtraction_vs_negative_number() {
+        let input = "10 - 5 -3";
+        let tokens = lex(input);
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Number(10),
+                Token::Minus,
+                Token::Number(5),
+                Token::Number(-3)
+            ]
+        );
+    }
+
+    #[test]
+    fn test_mixed_negative_and_subtraction() {
+        let input = "-5 - -3";
+        let tokens = lex(input);
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Number(-5),
+                Token::Minus,
+                Token::Number(-3)
             ]
         );
     }

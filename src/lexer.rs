@@ -80,6 +80,32 @@ impl<'a> Lexer<'a> {
                     _ => Token::Identifier(identifier),
                 }
             }
+            Some('-') => {
+                self.advance();
+                match self.current_char {
+                    Some(c) if c.is_digit(10) => {
+                        let mut number = String::from("-");
+                        while let Some(d) = self.current_char.and_then(|c| c.to_digit(10)) {
+                            number.push(std::char::from_digit(d, 10).unwrap());
+                            self.advance();
+                        }
+                        if self.current_char == Some('.') {
+                            number.push('.');
+                            self.advance();
+                            while let Some(d) = self.current_char.and_then(|c| c.to_digit(10)) {
+                                number.push(std::char::from_digit(d, 10).unwrap());
+                                self.advance();
+                            }
+                            let value = number.parse::<f64>().unwrap();
+                            return Token::Float(value);
+                        } else {
+                            let value = number.parse::<i64>().unwrap();
+                            return Token::Number(value);
+                        }
+                    }
+                    _ => Token::Minus,
+                }
+            }
             Some(c) if c.is_digit(10) => {
                 let mut number = String::new();            
                 while let Some(d) = self.current_char.and_then(|c| c.to_digit(10)) {
@@ -107,10 +133,6 @@ impl<'a> Lexer<'a> {
             Some('+') => {
                 self.advance();
                 Token::Plus
-            }
-            Some('-') => {
-                self.advance();
-                Token::Minus
             }
             Some('*') => {
                 self.advance();
