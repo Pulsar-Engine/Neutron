@@ -11,9 +11,10 @@ use symbol_table::SymbolTable;
 fn main() {
     let source_code = "
         class MyClass then
-            var x int
+            var i int
             func myFunc then
-                x = 42
+                for i = 0 10
+                end
             end
         end
     ";
