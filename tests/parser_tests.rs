@@ -1,49 +1,17 @@
-<<<<<<< HEAD
-use neutron::lexer::{Lexer};
-use neutron::parser::Parser;
-use neutron::ast::{ASTNode};
-
-#[test]
-fn test_parse_simple_class() {
-    let source_code = "
-        class MyClass then
-            var x
-            func myFunc then
-                x = 42
-            end
-        end
-    ";
-    
-    let mut parser = Parser::new(Lexer::new(source_code));
-=======
-use neutron::lexer::{Lexer, Token};
+use neutron::lexer::Lexer;
 use neutron::parser::Parser;
 use neutron::ast::ASTNode;
+use neutron::symbol_table::Type;
 
 #[test]
 fn test_parse_program() {
-    let input = "class MyClass then var x end";
+    let input = "class MyClass then var x int end";
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
->>>>>>> neutron/parsing
     let ast = parser.parse_program();
 
     match ast {
         ASTNode::Program(nodes) => {
-<<<<<<< HEAD
-            // Recherche dans l'AST une déclaration de classe "MyClass"
-            assert!(nodes.iter().any(|node| matches!(node, ASTNode::ClassDeclaration { name, .. } if name == "MyClass")));
-
-            // Vérifie que la variable "x" et la fonction "myFunc" sont présentes dans la déclaration de classe
-            for node in nodes {
-                if let ASTNode::ClassDeclaration { members, .. } = node {
-                    assert!(members.iter().any(|member| matches!(member, ASTNode::VariableDeclaration { name } if name == "x")));
-                    assert!(members.iter().any(|member| matches!(member, ASTNode::FunctionDeclaration { name, .. } if name == "myFunc")));
-                }
-            }
-        }
-        _ => panic!("Le programme n'est pas au format attendu."),
-=======
             assert_eq!(nodes.len(), 1);
             match &nodes[0] {
                 ASTNode::ClassDeclaration { name, members } => {
@@ -59,7 +27,7 @@ fn test_parse_program() {
 
 #[test]
 fn test_parse_class_declaration() {
-    let input = "class MyClass then var x end";
+    let input = "class MyClass then var x int end";
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
     let ast = parser.parse_program();
@@ -72,7 +40,7 @@ fn test_parse_class_declaration() {
                     assert_eq!(name, "MyClass");
                     assert_eq!(members.len(), 1);
                     match &members[0] {
-                        ASTNode::VariableDeclaration { name } => {
+                        ASTNode::VariableDeclaration { name, ..  } => {
                             assert_eq!(name, "x");
                         }
                         _ => panic!("Expected a VariableDeclaration"),
@@ -87,7 +55,7 @@ fn test_parse_class_declaration() {
 
 #[test]
 fn test_parse_function_declaration() {
-    let input = "func myFunc(a, b) then var x end";
+    let input = "func myFunc(a, b) then var x int end";
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
     let ast = parser.parse_program();
@@ -103,7 +71,7 @@ fn test_parse_function_declaration() {
                     assert_eq!(params[1], "b");
                     assert_eq!(body.len(), 1);
                     match &body[0] {
-                        ASTNode::VariableDeclaration { name } => {
+                        ASTNode::VariableDeclaration { name, .. } => {
                             assert_eq!(name, "x");
                         }
                         _ => panic!("Expected a VariableDeclaration"),
@@ -118,7 +86,7 @@ fn test_parse_function_declaration() {
 
 #[test]
 fn test_parse_variable_declaration() {
-    let input = "var x";
+    let input = "var x int";
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
     let ast = parser.parse_program();
@@ -127,8 +95,9 @@ fn test_parse_variable_declaration() {
         ASTNode::Program(nodes) => {
             assert_eq!(nodes.len(), 1);
             match &nodes[0] {
-                ASTNode::VariableDeclaration { name } => {
+                ASTNode::VariableDeclaration { name, var_type } => {
                     assert_eq!(name, "x");
+                    assert_eq!(var_type, &Type::Int);
                 }
                 _ => panic!("Expected a VariableDeclaration"),
             }
@@ -178,15 +147,15 @@ fn test_parse_binary_operations() {
                 ASTNode::Assignment { variable, expression } => {
                     assert_eq!(variable, "x");
                     match **expression {
-                        ASTNode::BinaryOperation { operator, ref left, ref right } => {
-                            assert_eq!(operator, '+');
+                        ASTNode::Arithmetic { ref operator, ref left, ref right } => {
+                            assert_eq!(operator, "+");
                             match **left {
                                 ASTNode::Number(value) => assert_eq!(value, 3),
                                 _ => panic!("Expected a Number on the left side"),
                             }
                             match **right {
-                                ASTNode::BinaryOperation { operator, ref left, ref right } => {
-                                    assert_eq!(operator, '*');
+                                ASTNode::Arithmetic { ref operator, ref left, ref right } => {
+                                    assert_eq!(operator, "*");
                                     match **left {
                                         ASTNode::Number(value) => assert_eq!(value, 4),
                                         _ => panic!("Expected a Number on the left side"),
@@ -196,16 +165,15 @@ fn test_parse_binary_operations() {
                                         _ => panic!("Expected a Number on the right side"),
                                     }
                                 }
-                                _ => panic!("Expected a BinaryOperation on the right side"),
+                                _ => panic!("Expected a Arithmetic on the right side"),
                             }
                         }
-                        _ => panic!("Expected a BinaryOperation"),
+                        _ => panic!("Expected a Arithmetic"),
                     }
                 }
                 _ => panic!("Expected an Assignment"),
             }
         }
         _ => panic!("Expected a Program ASTNode"),
->>>>>>> neutron/parsing
     }
 }

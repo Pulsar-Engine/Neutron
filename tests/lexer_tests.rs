@@ -1,19 +1,3 @@
-<<<<<<< HEAD
-use neutron::lexer::{Lexer, Token};
-
-#[test]
-fn test_simple_tokens() {
-    let source_code = "class MyClass then var x end";
-    let mut lexer = Lexer::new(source_code);
-
-    assert_eq!(lexer.get_next_token(), Token::Class);
-    assert_eq!(lexer.get_next_token(), Token::Identifier("MyClass".to_string()));
-    assert_eq!(lexer.get_next_token(), Token::Then);
-    assert_eq!(lexer.get_next_token(), Token::Var);
-    assert_eq!(lexer.get_next_token(), Token::Identifier("x".to_string()));
-    assert_eq!(lexer.get_next_token(), Token::End);
-    assert_eq!(lexer.get_next_token(), Token::EOF);
-=======
 #[cfg(test)]
 mod tests {
     use neutron::lexer::{Lexer, Token};
@@ -125,12 +109,14 @@ mod tests {
         let tokens = lex(input);
         assert_eq!(
             tokens,
-            vec![
-                Token::Number(-5),
-                Token::Minus,
-                Token::Number(-3)
-            ]
+            vec![Token::Number(-5), Token::Minus, Token::Number(-3)]
         );
     }
->>>>>>> neutron/parsing
+
+    #[test]
+    fn test_if_else_keywords() {
+        let input = "if else";
+        let tokens = lex(input);
+        assert_eq!(tokens, vec![Token::If, Token::Else]);
+    }
 }

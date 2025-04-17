@@ -1,12 +1,13 @@
 use neutron::symbol_table::SymbolTable;
+use neutron::symbol_table::Type;
 
 #[test]
 fn test_declare_variable() {
     let mut symbol_table = SymbolTable::new();
-    symbol_table.declare_variable("x");
+    symbol_table.declare_variable("x", Type::Int);
 
     assert!(symbol_table.variables.contains_key("x"));
-    assert_eq!(symbol_table.variables.get("x").unwrap(), &0);
+    assert_eq!(symbol_table.variables.get("x").unwrap(), &Type::Int);
 }
 
 #[test]
