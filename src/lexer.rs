@@ -6,8 +6,12 @@ pub enum Token {
     Var,
     Identifier(String),
     Number(i64),
+    Float(f64),
     Type(String),
+    If,
+    Else,
     Assign,
+    Equal,
     Plus,
     Minus,
     Multiply,
@@ -23,6 +27,7 @@ pub enum Token {
     Loop,
     For,
     While,
+    Boolean(bool),
     LessThan,
     GreaterThan,
     EOF,
@@ -85,6 +90,10 @@ impl<'a> Lexer<'a> {
                     "for" => Token::For,
                     "while" => Token::While,
                     "loop" => Token::Loop,
+                    "true" => Token::Boolean(true),
+                    "false" => Token::Boolean(false),
+                    "if" => Token::If,
+                    "else" => Token::Else,
                     "int" | "float" | "string" | "bool" => Token::Type(identifier),
                     _ => Token::Identifier(identifier),
                 }
@@ -137,7 +146,12 @@ impl<'a> Lexer<'a> {
             }            
             Some('=') => {
                 self.advance();
-                Token::Assign
+                if self.current_char == Some('=') {
+                    self.advance();
+                    Token::Equal
+                } else {
+                    Token::Assign
+                }
             }
             Some('+') => {
                 self.advance();

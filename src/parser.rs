@@ -102,10 +102,10 @@ impl<'a> Parser<'a> {
         } else {
             panic!("Expected variable name");
         };
-        self.eat(Token::Identifier(name.clone()));
+        self.consume_token(Token::Identifier(name.clone()));
 
         let var_type = if let Token::Type(type_name) = self.current_token.clone() {
-            self.eat(Token::Type(type_name.clone()));
+            self.consume_token(Token::Type(type_name.clone()));
             match type_name.as_str() {
                 "int" => Type::Int,
                 "float" => Type::Float,
@@ -135,78 +135,197 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expression(&mut self) -> ASTNode {
-        let left = match self.current_token.clone() {
+        let mut node = self.parse_term();
+    
+        while matches!(
+            self.current_token,
+            Token::LessThan | Token::GreaterThan | Token::Equal | Token::Plus | Token::Minus
+        ) {
+            let op = self.current_token.clone();
+            self.advance();
+            let right = self.parse_term();
+    
+            node = match op {
+                Token::LessThan => ASTNode::Comparison {
+                    left: Box::new(node),
+                    operator: "<".to_string(),
+                    right: Box::new(right),
+                },
+                Token::GreaterThan => ASTNode::Comparison {
+                    left: Box::new(node),
+                    operator: ">".to_string(),
+                    right: Box::new(right),
+                },
+                Token::Equal => ASTNode::Comparison { 
+                    left: Box::new(node),
+                    operator: "==".to_string(), 
+                    right: Box::new(right), 
+                },
+                Token::Plus => ASTNode::Arithmetic {
+                    left: Box::new(node),
+                    operator: "+".to_string(),
+                    right: Box::new(right),
+                },
+                Token::Minus => ASTNode::Arithmetic {
+                    left: Box::new(node),
+                    operator: "-".to_string(),
+                    right: Box::new(right),
+                },
+                _ => unreachable!(),
+            };
+        }
+    
+        node
+    }    
+    
+    fn parse_term(&mut self) -> ASTNode {
+        let mut node = self.parse_factor();
+    
+        while matches!(self.current_token, Token::Plus | Token::Minus) {
+            let op = self.current_token.clone();
+            self.advance();
+            let right = self.parse_factor();
+    
+            node = match op {
+                Token::Plus => ASTNode::Arithmetic {
+                    left: Box::new(node),
+                    operator: "+".to_string(),
+                    right: Box::new(right),
+                },
+                Token::Minus => ASTNode::Arithmetic {
+                    left: Box::new(node),
+                    operator: "-".to_string(),
+                    right: Box::new(right),
+                },
+                _ => unreachable!(),
+            };
+        }
+    
+        node
+    }
+    
+    fn parse_factor(&mut self) -> ASTNode {
+        let mut node = self.parse_primary();
+    
+        while matches!(self.current_token, Token::Multiply | Token::Divide) {
+            let op = self.current_token.clone();
+            self.advance();
+            let right = self.parse_primary();
+    
+            node = match op {
+                Token::Multiply => ASTNode::Arithmetic {
+                    left: Box::new(node),
+                    operator: "*".to_string(),
+                    right: Box::new(right),
+                },
+                Token::Divide => ASTNode::Arithmetic {
+                    left: Box::new(node),
+                    operator: "/".to_string(),
+                    right: Box::new(right),
+                },
+                _ => unreachable!(),
+            };
+        }
+    
+        node
+    }    
+
+    fn parse_primary(&mut self) -> ASTNode {
+        match self.current_token.clone() {
             Token::Number(value) => {
                 self.advance();
                 ASTNode::Number(value)
             }
+            Token::Boolean(value) => {
+                self.advance();
+                ASTNode::Boolean(value)
+            }
+            Token::Float(value) => {
+                self.advance();
+                ASTNode::Float(value)
+            }
             Token::Identifier(name) => {
                 self.advance();
-                ASTNode::Identifier(name)
-            }
-            _ => panic!("Unexpected token in expression: {:?}", self.current_token),
-        };
-    
-        match self.current_token {
-            Token::LessThan => {
-                self.eat(Token::LessThan);
-                let right = self.parse_expression();
-                ASTNode::Comparison {
-                    left: Box::new(left),
-                    operator: "<".to_string(),
-                    right: Box::new(right),
+                if self.current_token == Token::LParen {
+                    self.advance();
+                    let mut args = Vec::new();
+                    while self.current_token != Token::RParen {
+                        args.push(self.parse_expression());
+                        if self.current_token == Token::Comma {
+                            self.advance();
+                        }
+                    }
+                    self.consume_token(Token::RParen);
+                    ASTNode::FunctionCall { name, args }
+                } else {
+                    ASTNode::Identifier(name)
                 }
             }
-            Token::GreaterThan => {
-                self.eat(Token::GreaterThan);
-                let right = self.parse_expression();
-                ASTNode::Comparison {
-                    left: Box::new(left),
-                    operator: ">".to_string(),
-                    right: Box::new(right),
-                }
+            Token::LParen => {
+                self.advance();
+                let expr = self.parse_expression();
+                self.consume_token(Token::RParen);
+                expr
             }
-            Token::Plus => {
-                self.eat(Token::Plus);
-                let right = self.parse_expression();
-                ASTNode::Arithmetic {
-                    left: Box::new(left),
-                    operator: "+".to_string(),
-                    right: Box::new(right),
-                }
-            }
-            Token::Minus => {
-                self.eat(Token::Minus);
-                let right = self.parse_expression();
-                ASTNode::Arithmetic {
-                    left: Box::new(left),
-                    operator: "-".to_string(),
-                    right: Box::new(right),
-                }
-            }
-            _ => left,
+            _ => panic!("Unexpected token in primary: {:?}", self.current_token),
         }
     }
     
 
-    fn parse_while_loop(&mut self) -> ASTNode {
-        self.eat(Token::While);
+    fn parse_if_else(&mut self) -> ASTNode {
+        self.consume_token(Token::If);
         let condition = self.parse_expression();
+        self.consume_token(Token::Then);
+        let mut then_block = Vec::new();
+        while self.current_token != Token::Else && self.current_token != Token::End {
+            then_block.push(self.parse_statement());
+        }
+        let mut else_block = None;
+        if self.current_token == Token::Else {
+            self.consume_token(Token::Else);
+            else_block = Some(self.parse_block());
+        }
+        self.consume_token(Token::End);
+        ASTNode::IfElse {
+            condition: Box::new(condition),
+            then_block,
+            else_block,
+        }
+    }
+
+    fn parse_block(&mut self) -> Vec<ASTNode> {
+        let mut block = Vec::new();
+        while self.current_token != Token::End && self.current_token != Token::Else {
+            block.push(self.parse_statement());
+        }
+        block
+    }
+
+    fn parse_ret(&mut self) -> ASTNode {
+        self.consume_token(Token::Ret);
+        let expression = self.parse_expression();
+        ASTNode::Ret { expression: Box::new(expression) }
+    }    
+
+    fn parse_while_loop(&mut self) -> ASTNode {
+        self.consume_token(Token::While);
+        let condition = self.parse_expression();
+        self.consume_token(Token::Then);
         let mut body = Vec::new();
         self.symbol_table.enter_scope();
         while self.current_token != Token::End {
             body.push(self.parse_statement());
         }
-        self.eat(Token::End);
+        self.consume_token(Token::End);
         self.symbol_table.exit_scope();
         ASTNode::WhileLoop { condition: (Box::new(condition)), body, }
     }
 
     fn parse_for_loop(&mut self) -> ASTNode {
-        self.eat(Token::For);
+        self.consume_token(Token::For);
         self.symbol_table.enter_scope();
         let variable = if let Token::Identifier(name) = self.current_token.clone() {
-            self.eat(Token::Identifier(name.clone()));
+            self.consume_token(Token::Identifier(name.clone()));
             if !self.symbol_table.variables.contains_key(&name) {
                 self.symbol_table.declare_variable(&name, Type::Int);
             }
@@ -218,14 +337,14 @@ impl<'a> Parser<'a> {
             panic!("Expected '=', found {:?}", self.current_token);
         }
         
-        self.eat(Token::Assign);
+        self.consume_token(Token::Assign);
         let start = self.parse_expression();
         let end = self.parse_expression();
         let mut body = Vec::new();
         while self.current_token != Token::End {
             body.push(self.parse_statement());
         }
-        self.eat(Token::End);
+        self.consume_token(Token::End);
         self.symbol_table.exit_scope();
         ASTNode::ForLoop { variable, start: (Box::new(start)), end: (Box::new(end)), body, }
     }

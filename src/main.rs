@@ -1,42 +1,52 @@
+mod ast;
 mod lexer;
 mod parser;
-mod ast;
 mod semantic;
 mod symbol_table;
 
 use lexer::Lexer;
 use parser::Parser;
-use symbol_table::SymbolTable;
 
 fn main() {
-    let source_code = "
-        class MyClass then
-            var i int
-            func myFunc then
-                for i = 0 10
-                end
-            end
-        end
-    ";
+    let source_code = std::fs::read_to_string("integration_test.neutron")
+    .expect("Could not read test file");
 
-    let mut lexer = Lexer::new(source_code);
-    let _tokens = {
-        let mut _tokens = Vec::new();
-        loop {
-            let token = lexer.get_next_token();
-            if token == lexer::Token::EOF {
-                break;
-            }
-            _tokens.push(token);
+    println!("🧾 Source code:\n{}\n", source_code);
+
+    // 🔍 LEXER
+    println!("🔍 Tokens:");
+    let mut lexer = Lexer::new(&source_code);
+    loop {
+        let token = lexer.get_next_token();
+        if token == lexer::Token::EOF {
+            break;
         }
-    };
+        println!("{:?}", token);
+    }
 
-    let mut parser = Parser::new(Lexer::new(source_code));
+    // 🌳 PARSER
+    let mut parser = Parser::new(Lexer::new(&source_code));
     let ast = parser.parse_program();
 
-    let mut symbol_table = SymbolTable::new();
-    semantic::analyze(&ast, &mut symbol_table);
-
+    println!("\n🌳 AST:");
     println!("{:#?}", ast);
-    println!("{:#?}", symbol_table);
+
+    // 🧠 SEMANTIC ANALYSIS (avec catch_unwind)
+    println!("\n🧠 Semantic Analysis:");
+    let analysis_result = std::panic::catch_unwind(|| {
+        let mut symbol_table = symbol_table::SymbolTable::new();
+        semantic::analyze(&ast, &mut symbol_table);
+        symbol_table
+    });
+
+    match analysis_result {
+        Ok(symbol_table) => {
+            println!("✅ Semantic analysis passed");
+            println!("\n📦 Symbol Table:");
+            println!("{:#?}", symbol_table);
+        }
+        Err(e) => {
+            println!("❌ Semantic error: {:?}", e);
+        }
+    }
 }

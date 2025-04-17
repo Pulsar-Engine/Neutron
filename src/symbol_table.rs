@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, hash::Hash};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Type {
@@ -36,11 +36,12 @@ impl SymbolTable {
     }
 
     pub fn get_variable_type(&self, name: &str) -> Option<&Type> {
-        if self.local_variables_stack.last().unwrap().contains(name) {
-            self.variables.get(name)
-        } else {
-            None
+        for scope in self.local_variables_stack.iter().rev() {
+            if scope.contains(name) {
+                return self.variables.get(name);
+            }
         }
+        None
     }
 
     pub fn exit_scope(&mut self) {
