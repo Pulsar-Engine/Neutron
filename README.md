@@ -24,7 +24,7 @@ It currently supports classes, functions, variables, arithmetic, conditions, loo
 
 ## 🛠️ Project Structure
 
-src/ ├── lib.rs # Core module exports ├── main.rs # Simple CLI to validate .neutron files ├── bin/ │ └── test_main.rs # Debug playground with println! and AST dumps ├── lexer.rs # Token definitions and lexer ├── parser.rs # AST generation ├── semantic.rs # Semantic analyzer ├── symbol_table.rs # Scope and type management ├── ast.rs # AST node definitions examples/ ├── demo.neutron # Sample program showcasing all features tests/ ├── lexer_tests.rs ├── parser_tests.rs ├── semantic_tests.rs
+neutron/ ├── Cargo.toml # Rust project manifest ├── README.md # You're reading it! ├── examples/ # Sample Neutron programs │ └── demo.neutron ├── src/ # Source files of the Neutron compiler frontend │ ├── ast.rs # Abstract Syntax Tree definitions │ ├── lexer.rs # Tokenizer (lexical analysis) │ ├── parser.rs # Parser (builds the AST) │ ├── semantic.rs # Semantic analysis (type checking, scopes, etc.) │ ├── symbol_table.rs # Symbol table for variables/functions │ ├── lib.rs # Library entry point (exports modules) │ └── main.rs # CLI: validate and analyze .neutron programs ├── tests/ # Unit and integration tests │ ├── lexer_tests.rs │ ├── parser_tests.rs │ └── semantic_tests.rs
 
 ---
 
