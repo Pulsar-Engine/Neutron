@@ -28,6 +28,7 @@ pub enum Token {
     For,
     While,
     Boolean(bool),
+    StringLiteral(String),
     LessThan,
     GreaterThan,
     EOF,
@@ -47,6 +48,30 @@ impl<'a> Lexer<'a> {
         lexer.advance();
         lexer
     }
+
+    fn read_string(&mut self) -> String {
+        self.advance();
+        let mut string = String::new();
+        while let Some(c) = self.current_char {
+            if c == '"' {
+                self.advance();
+                break;
+            } else {
+                string.push(c);
+                self.advance();
+            }
+        }
+        string
+    }    
+
+    fn skip_comment(&mut self) {
+        while let Some(c) = self.current_char {
+            if c == '\n' {
+                break;
+            }
+            self.advance();
+        }
+    }    
 
     fn advance(&mut self) {
         self.current_char = self.source.next();
@@ -77,6 +102,10 @@ impl<'a> Lexer<'a> {
 
     pub fn get_next_token(&mut self) -> Token {
         self.skip_whitespace();
+        while let Some('#') = self.current_char {
+            self.skip_comment();
+            self.skip_whitespace();
+        }
         match self.current_char {
             Some(c) if c.is_alphabetic() => {
                 let identifier = self.read_identifier();
@@ -143,7 +172,11 @@ impl<'a> Lexer<'a> {
                     let value = number.parse::<i64>().unwrap();
                     Token::Number(value)
                 }
-            }            
+            }
+            Some('"') => {
+                let string = self.read_string();
+                Token::StringLiteral(string)
+            }
             Some('=') => {
                 self.advance();
                 if self.current_char == Some('=') {

@@ -232,6 +232,10 @@ impl<'a> Parser<'a> {
 
     fn parse_primary(&mut self) -> ASTNode {
         match self.current_token.clone() {
+            Token::StringLiteral(s) => {
+                self.advance();
+                ASTNode::StringLiteral(s)
+            }
             Token::Number(value) => {
                 self.advance();
                 ASTNode::Number(value)

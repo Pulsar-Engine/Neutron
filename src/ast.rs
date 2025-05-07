@@ -1,6 +1,6 @@
 use crate::symbol_table::Type;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ASTNode {
     Program(Vec<ASTNode>),
     ClassDeclaration { name: String, members: Vec<ASTNode> },
