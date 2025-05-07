@@ -1,0 +1,15 @@
+class LoopTest then
+    func run() then
+        var i int
+        var total int
+        i = 0
+        total = 0
+
+        while i < 5 then
+            total = total + i
+            i = i + 1
+        end
+
+        ret total
+    end
+end

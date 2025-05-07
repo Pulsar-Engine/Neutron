@@ -1,0 +1,7 @@
+class StringDemo then
+    func run() then
+        var name string
+        name = "Skywear"
+        ret name
+    end
+end

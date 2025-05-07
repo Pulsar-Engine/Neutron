@@ -1,0 +1,45 @@
+class Demo then
+    var result int
+    var ready bool
+    var scale float
+
+    func compute(a, b) then
+        var sum int
+        sum = (a + b) * 2
+
+        if sum > 10 then
+            sum = sum + 1
+        else
+            sum = sum - 1
+        end
+
+        ret sum
+    end
+
+    func run() then
+        var i int
+        var total int
+        var done bool
+
+        i = 0
+        total = 0
+        done = false
+
+        while done == false then
+            total = total + i
+            i = i + 1
+
+            if i > 5 then
+                done = true
+            end
+        end
+
+        for j = 0 3
+            total = total + j
+        end
+
+        result = total
+        ready = true
+        scale = 1.5
+    end
+end

@@ -1,0 +1,13 @@
+class Demo then
+    func run() then
+        var x int
+        var y int
+        var result int
+
+        x = 5
+        y = 7
+        result = x + y
+
+        ret result
+    end
+end

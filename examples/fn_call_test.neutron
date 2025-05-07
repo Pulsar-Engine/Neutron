@@ -1,0 +1,11 @@
+class FnTest then
+    func compute(a, b) then
+        ret a + b
+    end
+
+    func run() then
+        var result int
+        result = compute(10, 20)
+        ret result
+    end
+end
