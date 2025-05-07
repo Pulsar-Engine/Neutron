@@ -3,3 +3,4 @@ pub mod parser;
 pub mod ast;
 pub mod semantic;
 pub mod symbol_table;
+pub mod interpreter;

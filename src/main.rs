@@ -5,6 +5,7 @@ use neutron::lexer::Lexer;
 use neutron::parser::Parser;
 use neutron::semantic::analyze;
 use neutron::symbol_table::SymbolTable;
+use neutron::interpreter::Interpreter;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -24,4 +25,9 @@ fn main() {
     analyze(&ast, &mut symbol_table);
 
     println!("✅ Program is valid!");
+
+    let mut interpreter = Interpreter::new();
+    println!("🧠 Running program:");
+    let result = interpreter.interpret(&ast);
+    println!("✅ Result: {:?}", result);
 }

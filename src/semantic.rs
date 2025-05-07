@@ -162,6 +162,12 @@ fn get_expression_type(expr: &ASTNode, symbol_table: &SymbolTable) -> Type {
             }
             Type::Bool
         }
+        ASTNode::FunctionCall { name, .. } => {
+            if !symbol_table.functions.contains_key(name) {
+                panic!("Semantic error: Unknown function '{}'", name);
+            }
+            Type::Int
+        }
         _ => panic!("Unsupported expression type in get_expression_type: {:?}", expr),
     }
 }
